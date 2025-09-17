@@ -69,7 +69,8 @@ architecture Behavioral of Main is
 			C				:	out	std_logic_vector(7 downto 0)
 		);
 	end component;
-
+	
+	signal tc1			:	std_logic	:=	'0';
 	signal c1			:	std_logic_vector(7 downto 0);
 	signal command		:	std_logic_vector(1 downto 0)	:=	"00";
 	
@@ -85,6 +86,16 @@ begin
 	);
 	command_led <=	command;
 	
+	modn2: ModN generic map(
+		maxN		=>	8,
+		maxBit	=>	3
+	) port map(
+		clk_in	=>	clk_in,
+		clr		=>	'0',
+		TC			=>	tc1,
+		num		=>	open
+	);
+	
 	ALU1: ALU port map(
 		A 			=> A,
 		B 			=> B,
@@ -93,7 +104,7 @@ begin
 	);
 	
 	seging: sevenSegmentController port map(
-		clk_in		=>	clk_in,
+		clk_in		=>	tc1,
 		num_in		=>	c1,
 		bits_out		=>	segment_bits,
 		common_out	=>	common
