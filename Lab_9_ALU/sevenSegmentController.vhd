@@ -30,16 +30,19 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity sevenSegmentController is
+	generic(
+		num_amount	:	integer	:=	1
+	);
 	port(
-		clk_in		:	in		std_logic;
-		num_in		:	in		std_logic_vector(7 downto 0);
-		bits_out		:	out	std_logic_vector(6 downto 0);
+		clk_in		:	in	std_logic;
+		num_in		:	in	std_logic_vector(((4*num_amount) - 1) downto 0);
+		bits_out	:	out	std_logic_vector(6 downto 0);
 		common_out	:	out	std_logic_vector(3 downto 0)
 	);
 end sevenSegmentController;
 
 architecture Behavioral of sevenSegmentController is
-	function hex_to_7segment (bits :  std_logic_vector (3 downto 0)) return std_logic_vector is
+	function hex_to_7segment (bits :  std_logic_vector (3 downto 0)	:=	"1010") return std_logic_vector is
 		variable segments: std_logic_vector (6 downto 0); 
 	begin
 		case bits is 
@@ -61,37 +64,29 @@ architecture Behavioral of sevenSegmentController is
 			when "1111" => segments := "1000111";
 			when others => segments := "0000000";
 		end case;
-		
+
 		return segments;
 	end function;
 	
-	signal commoning	:	std_logic	:=	'0';
+	signal commoning : integer := 0;
 	
 begin
 
 	process(clk_in)
 	begin
 		if(rising_edge(clk_in)) then
-			commoning <= not commoning;
+			if(commoning = num_amount - 1) then
+				commoning <= 0;
+			else
+				commoning <= commoning + 1;
+			end if;
 		end if;
 	end process;
 	
 	process(commoning)
 	begin
-		if(commoning = '0') then
-			common_out	<=	(0 => '0', others => '1');
-		else
-			common_out	<=	(1 => '0', others => '1');
-		end if;
-	end process;
-	
-	process(commoning)
-	begin
-		if(commoning = '0') then
-			bits_out		<=	hex_to_7segment(num_in(3 downto 0));
-		else
-			bits_out		<=	hex_to_7segment(num_in(7 downto 4));
-		end if;
+		common_out				<=	(others => '1');
+		common_out(commoning) 	<=	'0';
+		bits_out				<=	hex_to_7segment(num_in(((4*commoning) + 3) downto (4*commoning)));
 	end process;
 end Behavioral;
-
