@@ -3,12 +3,12 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity Main is
 	port(
-		clk_in		:	in	std_logic;
-		butt1		:	in	std_logic;
-		A, B		:	in	std_logic_vector(7 downto 0);
+		clk_in			:	in	std_logic;
+		butt1			:	in	std_logic;
+		A, B			:	in	std_logic_vector(7 downto 0);
 		segment_bits	:	out	std_logic_vector(6 downto 0);
-		common		:	out	std_logic_vector(3 downto 0);
-		command_led	:	out	std_logic_vector(1 downto 0)
+		common			:	out	std_logic_vector(3 downto 0);
+		command_led		:	out	std_logic_vector(1 downto 0)
 	);
 end Main;
 
@@ -32,8 +32,8 @@ architecture Behavioral of Main is
 		);
 		port(
 			clk_in, clr	:	in	std_logic;
-			TC		:	out	std_logic;
-			num		:	out	std_logic_vector(maxBit - 1 downto 0)
+			TC			:	out	std_logic;
+			num			:	out	std_logic_vector(maxBit - 1 downto 0)
 		);
 	end component;
 	

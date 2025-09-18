@@ -4,13 +4,13 @@ use ieee.numeric_std.all;
 
 entity ModN is
 	generic(
-		maxN			:	integer	:=	16;
+		maxN		:	integer	:=	16;
 		maxBit		:	integer	:=	4
 	);
 	port(
 		clk_in, clr	:	in		std_logic;
-		TC				:	out	std_logic;
-		num			:	out	std_logic_vector(maxBit - 1 downto 0)
+		TC			:	out		std_logic;
+		num			:	out		std_logic_vector(maxBit - 1 downto 0)
 	);
 end ModN;
 
