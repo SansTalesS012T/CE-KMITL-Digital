@@ -65,7 +65,7 @@ begin
 		maxN	=>	8,
 		maxBit	=>	3
 	) port map(
-		clk_in		=>	clk_in,
+		clk_in	=>	clk_in,
 		clr		=>	'0',
 		TC		=>	tc1,
 		num		=>	open
