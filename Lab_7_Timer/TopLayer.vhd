@@ -4,7 +4,7 @@ use ieee.std_logic_1164.all;
 entity TopLayer is
     port(
         stopButton, resetButton, clkIn      :   in      std_logic;  
-        segmentDot                          :   out     std_logic;
+        ledDot                              :   out     std_logic;
         segmentBit  	                    :	out	    std_logic_vector(6 downto 0);
 		common			                    :	out 	std_logic_vector(3 downto 0)
     );
@@ -35,15 +35,30 @@ architecture behave of TopLayer is
         );
     end component;
 
-    signal timeRunning, segmentFreq  :   std_logic   :=  '1';
-    -- signal clock1Hz     :   std_logic   :=  '0';
-    signal timeNumber   :   std_logic_vector(15 downto 0);
-    signal tcVector     :   std_logic_vector(3 downto 0) := "0000";
+    type intArray is array (integer range <>) of integer;
+
+    constant maxNArray                  :   intArray(0 to 3) := (10, 6, 10, 10);
+
+    signal timeRunning, segmentFreq     :   std_logic   :=  '1';
+    signal dotTC                        :   std_logic   :=  '0';
+    signal dotRunning                   :   std_logic_vector(0 downto 0)    := "0";  
+    signal timeNumber                   :   std_logic_vector(15 downto 0);
+    signal tcVector                     :   std_logic_vector(4 downto 0)    := "00000";
+    signal commonControl                :   std_logic_vector(3 downto 0);
 begin
     process (stopButton)
     begin
         if(rising_edge(stopButton)) then
             timeRunning <= not timeRunning;
+        end if;
+    end process;
+
+    process
+    begin
+        if(commonControl(2) = '0') then
+            ledDot  <=  dotRunning(0);
+        else
+            ledDot  <=  '0';
         end if;
     end process;
 
@@ -59,7 +74,7 @@ begin
             num     =>  open
         );
 
-    clockHalfHz: ModN
+    tempClock1: ModN
         generic map(
             maxN    =>  10000000,
             maxBit  =>  25
@@ -67,53 +82,78 @@ begin
         port map(
             clk_in  =>  clkIn and timeRunning,
             clr     =>  resetButton and not timeRunning,
-            TC      =>  segmentDot,
+            TC      =>  dotTC,
             num     =>  open
         );
 
-    digit1: ModN 
+    tempClock2: ModN
         generic map(
-            maxN    =>  10,
-            maxBit  =>  4
-        ) port map(
-            clk_in  =>  tcVector(0),
-            clr     =>  resetButton and not timeRunning,
-            TC      =>  tcVector(1),
-            num     =>  timeNumber(3 downto 0)
-        );
-
-    digit2: ModN
-        generic map(
-            maxN    =>  6,
-            maxBit  =>  4
-        ) port map(
-            clk_in  =>  tcVector(1),
-            clr     =>  resetButton and not timeRunning,
-            TC      =>  tcVector(2),
-            num     =>  timeNumber(7 downto 4)
-        );
-
-    digit3: ModN
-        generic map(
-            maxN    =>  10,
-            maxBit  =>  4
-        ) port map(
-            clk_in  =>  tcVector(2),
-            clr     =>  resetButton and not timeRunning,
-            TC      =>  tcVector(3),
-            num     =>  timeNumber(11 downto 8)
-        );
-    
-    digit4: ModN
-        generic map(
-            maxN    =>  10,
-            maxBit  =>  4
-        ) port map(
-            clk_in  =>  tcVector(3),
+            maxN    =>  2,
+            maxBit  =>  1
+        )
+        port map(
+            clk_in  =>  dotTC,
             clr     =>  resetButton and not timeRunning,
             TC      =>  open,
-            num     =>  timeNumber(15 downto 12)
+            num     =>  dotRunning
         );
+
+    genModNBlock: for i in 0 to 3 generate
+            digit: ModN
+                generic map(
+                    maxN    =>  maxNArray(i),
+                    maxBit  =>  4
+                ) port map(
+                    clk_in  =>  tcVector(i),
+                    clr     =>  resetButton and not timeRunning,
+                    TC      =>  tcVector(i + 1),
+                    num     =>  timeNumber(4*i + 3 downto 4*i)
+                );
+    end generate;
+
+    -- digit1: ModN 
+    --     generic map(
+    --         maxN    =>  10,
+    --         maxBit  =>  4
+    --     ) port map(
+    --         clk_in  =>  tcVector(0),
+    --         clr     =>  resetButton and not timeRunning,
+    --         TC      =>  tcVector(1),
+    --         num     =>  timeNumber(3 downto 0)
+    --     );
+
+    -- digit2: ModN
+    --     generic map(
+    --         maxN    =>  6,
+    --         maxBit  =>  4
+    --     ) port map(
+    --         clk_in  =>  tcVector(1),
+    --         clr     =>  resetButton and not timeRunning,
+    --         TC      =>  tcVector(2),
+    --         num     =>  timeNumber(7 downto 4)
+    --     );
+
+    -- digit3: ModN
+    --     generic map(
+    --         maxN    =>  10,
+    --         maxBit  =>  4
+    --     ) port map(
+    --         clk_in  =>  tcVector(2),
+    --         clr     =>  resetButton and not timeRunning,
+    --         TC      =>  tcVector(3),
+    --         num     =>  timeNumber(11 downto 8)
+    --     );
+    
+    -- digit4: ModN
+    --     generic map(
+    --         maxN    =>  10,
+    --         maxBit  =>  4
+    --     ) port map(
+    --         clk_in  =>  tcVector(3),
+    --         clr     =>  resetButton and not timeRunning,
+    --         TC      =>  open,
+    --         num     =>  timeNumber(15 downto 12)
+    --     );
 
     forSegmentFreq: ModN
         generic map(
@@ -133,6 +173,7 @@ begin
             clk_in      =>  segmentFreq,
             num_in      =>  timeNumber,
             bits_out    =>  segmentBit,
-            common_out  =>  common
+            common_out  =>  commonControl
         );
+    common <= commonControl;
 end behave;

@@ -3,7 +3,7 @@ NET "clkIn"             LOC = P123;
 NET "stopButton"        LOC = P47;
 NET "resetButton"       LOC = P48;
 
-NET "segmentDot"        LOC = P26;
+NET "ledDot"            LOC = P26;
 NET "segmentBit[6]" 	LOC = P41;
 NET "segmentBit[5]" 	LOC = P40;
 NET "segmentBit[4]" 	LOC = P35;
